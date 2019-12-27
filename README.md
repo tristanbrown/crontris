@@ -1,2 +1,0 @@
-# crontris
-A scheduler microservice
