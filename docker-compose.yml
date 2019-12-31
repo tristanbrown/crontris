@@ -1,0 +1,10 @@
+# docker-compose.yml
+
+version: "3"
+
+services:
+   rabbitmq:
+     image: rabbitmq:3-management-alpine
+     ports:
+       - "5672"
+       - "8080:15672"
