@@ -21,7 +21,7 @@ class Scheduler(BackgroundScheduler):
                 password=Config.PASSWORD,
                 authSource='admin',
                 )}
-        executors = {'default': ThreadPoolExecutor(max_workers=None)}
+        executors = {'default': ThreadPoolExecutor(max_workers=50)}
         job_defaults = {'coalesce': True, 'max_instances': 1, 'misfire_grace_time': 15,}
         super().__init__(
             jobstores=jobstores,

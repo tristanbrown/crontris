@@ -6,7 +6,7 @@ RUN pip install --user -r requirements.txt
 COPY ./src /app
 
 # Production image
-FROM python:3.8.0-slim as crontris
+FROM python:3.8-slim as crontris
 COPY --from=builder /root/.local /root/.local
 COPY --from=builder /app /app
 WORKDIR app
