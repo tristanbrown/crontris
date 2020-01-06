@@ -4,7 +4,7 @@ import pika
 import time
 import uuid
 
-from crontris import scheduler
+import crontris
 from .settings import Config
 
 connection = pika.BlockingConnection(
@@ -23,7 +23,7 @@ class Listener():
         self.channel.start_consuming()
 
     def schedule(self, ch, method, props, body):
-        response = scheduler.consume(json.loads(body))
+        response = crontris.scheduler.consume(json.loads(body))
         if response is not None:
             ch.basic_publish(exchange='',
                         routing_key=props.reply_to,

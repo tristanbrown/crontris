@@ -1,10 +1,10 @@
 """Main module for running scheduler."""
-from crontris import scheduler
+import crontris
 from .messaging import Listener
 
 def run():
     """Main method to run the app."""
-    scheduler.start()
+    crontris.scheduler.start()
     Listener().start()
 
 if __name__ == "__main__":

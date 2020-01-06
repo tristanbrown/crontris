@@ -4,7 +4,9 @@ import __about__
 
 REQUIREMENTS = [
     'apscheduler',
+    'python-dotenv',
     'pika',
+    'pymongo',
 ]
 
 setup(
@@ -20,7 +22,7 @@ setup(
     python_requires='>=3.6, !=3.7.2',
     entry_points={
         'console_scripts': [
-            'fintrist_app = fintrist_app.__main__:run',
+            'crontris_app = crontris.__main__:run',
         ]
     },
 )
