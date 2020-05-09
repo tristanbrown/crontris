@@ -2,14 +2,18 @@ NAME   := tristanbrown/crontris
 TAG    := $(shell git rev-parse --short HEAD)
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 IMG    := ${NAME}:${TAG}
-LATEST := ${NAME}:${BRANCH}
+GIT    := ${NAME}:${BRANCH}
+LATEST := ${NAME}:latest
  
 build:
-	@docker build -t ${IMG} .
-	@docker tag ${IMG} ${LATEST}
+	docker build -t ${IMG} .
+	docker tag ${IMG} ${GIT} 
+	docker tag ${IMG} ${LATEST}
  
 push:
-	@docker push ${NAME}
+	docker push ${IMG}
+	docker push ${GIT}
+	docker push ${LATEST}
  
 login:
-	@docker log -u ${DOCKER_USER} -p ${DOCKER_PASS}
+	docker log -u ${DOCKER_USER} -p ${DOCKER_PASS}

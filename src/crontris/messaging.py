@@ -7,8 +7,19 @@ import uuid
 import crontris
 from .settings import Config
 
-connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=Config.RABBIT_HOST))
+def connect_rabbit(tries=10):
+    try:
+        rabbit_connection = pika.BlockingConnection(
+                    pika.ConnectionParameters(host=Config.RABBIT_HOST))
+    except pika.exceptions.AMQPConnectionError:
+        if tries > 0:
+            time.sleep(2)
+            rabbit_connection = connect_rabbit(tries - 1)
+        else:
+            raise
+    return rabbit_connection
+
+connection = connect_rabbit()
 
 class Listener():
     def __init__(self):
@@ -25,11 +36,11 @@ class Listener():
     def schedule(self, ch, method, props, body):
         response = crontris.scheduler.consume(json.loads(body))
         if response is not None:
-            ch.basic_publish(exchange='',
-                        routing_key=props.reply_to,
-                        properties=pika.BasicProperties(correlation_id = \
-                                                            props.correlation_id),
-                        body=json.dumps(response))
+            ch.basic_publish(
+                exchange='',
+                routing_key=props.reply_to,
+                properties=pika.BasicProperties(correlation_id=props.correlation_id),
+                body=json.dumps(response))
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
