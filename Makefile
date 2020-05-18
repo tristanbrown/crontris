@@ -1,3 +1,5 @@
+include .env
+
 NAME   := tristanbrown/crontris
 TAG    := $(shell git rev-parse --short HEAD)
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
@@ -16,4 +18,4 @@ push:
 	docker push ${LATEST}
  
 login:
-	docker log -u ${DOCKER_USER} -p ${DOCKER_PASS}
+	@docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
