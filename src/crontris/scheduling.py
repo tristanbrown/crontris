@@ -1,5 +1,6 @@
 """Scheduler"""
 import datetime
+import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor
@@ -9,8 +10,11 @@ from apscheduler.jobstores.base import JobLookupError
 from .settings import Config
 from .messaging import RpcClient
 
+logger = logging.getLogger(__name__)
+
 class Scheduler(BackgroundScheduler):
     def __init__(self):
+        ## Choose the database for the jobs queue.
         jobstores = {
             'default': MongoDBJobStore(
                 database=Config.DATABASE_NAME,
@@ -21,7 +25,9 @@ class Scheduler(BackgroundScheduler):
                 password=Config.PASSWORD,
                 authSource='admin',
                 )}
+        ## Use threads for unlimited simultaneous messages.
         executors = {'default': ThreadPoolExecutor(max_workers=50)}
+        ## Combine identical messages.
         job_defaults = {'coalesce': True, 'max_instances': 1, 'misfire_grace_time': 15,}
         super().__init__(
             jobstores=jobstores,
@@ -31,6 +37,12 @@ class Scheduler(BackgroundScheduler):
 
     @classmethod
     def consume(cls, message):
+        """Receives a json-formatted message.
+
+        The 'method' key should refer to a class method.
+        The remaining key:value pairs will be passed as kwargs to the method.
+        """
+        logger.debug(f"Message received by scheduler: {message}")
         method = message.pop('method')
         call = getattr(cls, method)
         return call(**message)

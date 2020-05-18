@@ -1,11 +1,14 @@
 """Messaging via RabbitMQ."""
 import json
+import logging
 import pika
 import time
 import uuid
 
 import crontris
 from .settings import Config
+
+logger = logging.getLogger(__name__)
 
 def connect_rabbit(tries=10):
     try:
@@ -23,10 +26,13 @@ connection = connect_rabbit()
 
 class Listener():
     def __init__(self):
+        """Start listening for messages to send to the scheduler.
+        
+        Any message sent to the 'scheduling' queue will be acknowledged.
+        """
         self.channel = connection.channel()
         self.channel.queue_declare(queue='scheduling', durable=True)
         print(' [*] Waiting for messages. To exit press CTRL+C')
-
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(queue='scheduling', on_message_callback=self.schedule)
 
@@ -34,7 +40,17 @@ class Listener():
         self.channel.start_consuming()
 
     def schedule(self, ch, method, props, body):
-        response = crontris.scheduler.consume(json.loads(body))
+        """Process messages for the scheduler.
+        
+        Messages should be in json format.
+        """
+        try:
+            message = json.loads(body)
+            response = crontris.scheduler.consume(message)
+        except Exception as ex: #json.decoder.JSONDecodeError:
+            logger.warning(f"Invalid message: {body}")
+            logger.warning(ex)
+            response = None
         if response is not None:
             ch.basic_publish(
                 exchange='',
